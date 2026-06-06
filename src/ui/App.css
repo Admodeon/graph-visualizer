@@ -7,13 +7,6 @@ body {
   overflow: hidden;
 }
 
-/* ROOT DOIT STRETCH */
-#root {
-  width: 100%;
-  height: 100%;
-}
-
-/* IMPORTANT: force fill */
 #cy {
   width: 100%;
   height: 100%;

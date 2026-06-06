@@ -12,11 +12,22 @@ export function bfs(graph: Graph, start: string): Step[] {
   while (queue.length > 0) {
     const current = queue.shift()!;
 
+    // déjà visité → skip
     if (visited.has(current)) continue;
+
+    // marquer comme en cours de traitement
+    steps.push({
+      type: "current",
+      node: current,
+    });
 
     visited.add(current);
 
-    steps.push({ type: "visit", node: current });
+    // visite finale
+    steps.push({
+      type: "visit",
+      node: current,
+    });
 
     // récupérer voisins
     const neighbors = graph.edges
@@ -26,10 +37,20 @@ export function bfs(graph: Graph, start: string): Step[] {
     for (const n of neighbors) {
       if (!visited.has(n)) {
         queue.push(n);
+
+        // node découvert (important pour visualisation)
+        steps.push({
+          type: "enqueue",
+          node: n,
+        });
       }
     }
 
-    steps.push({ type: "queue", queue: [...queue] });
+    // snapshot de la queue après traitement du node
+    steps.push({
+      type: "queue",
+      queue: [...queue],
+    });
   }
 
   steps.push({ type: "done" });
