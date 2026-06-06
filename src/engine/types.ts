@@ -8,5 +8,6 @@ export type Step =
   | { type: "visit"; node: string }
   | { type: "enqueue"; node: string }
   | { type: "queue"; queue: string[] }
+  | { type: "edge"; from: string; to: string }
   | { type: "done" };
 export type AlgoFunction = (graph: Graph, start: string) => Step[];

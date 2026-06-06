@@ -40,8 +40,9 @@ export function bfs(graph: Graph, start: string): Step[] {
 
         // node découvert (important pour visualisation)
         steps.push({
-          type: "enqueue",
-          node: n,
+          type: "edge",
+          from: current,
+          to: n,
         });
       }
     }

@@ -5,38 +5,67 @@ import type { Core } from "cytoscape";
 
 export function useRunner(steps: Step[], cy: Core | null) {
   const runnerRef = useRef<Runner | null>(null);
+  const cyRef = useRef<Core | null>(null);
+
+  // keep cy updated
+  useEffect(() => {
+    cyRef.current = cy;
+  }, [cy]);
 
   useEffect(() => {
     runnerRef.current = new Runner(steps);
   }, [steps]);
 
   const applyStep = (step: Step) => {
-    if (!cy) return;
+    const cyInstance = cyRef.current;
+    if (!cyInstance) return;
 
     switch (step.type) {
       case "start":
-        cy.nodes().removeClass("current visited queued");
-        cy.$id(step.node).addClass("current");
+        cyInstance.nodes().removeClass("current visited queued");
         break;
 
       case "current":
-        cy.nodes().removeClass("current");
-        cy.$id(step.node).addClass("current");
+        cyInstance.nodes().removeClass("current");
+        cyInstance.$id(step.node).addClass("current");
         break;
 
       case "visit":
-        cy.$id(step.node).removeClass("current queued").addClass("visited");
+        cyInstance
+          .$id(step.node)
+          .removeClass("current queued")
+          .addClass("visited");
         break;
 
       case "enqueue":
-        cy.$id(step.node).addClass("queued");
+        cyInstance.$id(step.node).addClass("queued");
         break;
 
+      case "edge": {
+        cyInstance.edges().removeClass("active-edge");
+
+        const edge = cyInstance
+          .edges()
+          .filter(
+            (e) =>
+              e.data("source") === step.from && e.data("target") === step.to
+          );
+
+        edge.addClass("active-edge");
+
+        setTimeout(() => {
+          edge.removeClass("active-edge");
+        }, 300);
+
+        break;
+      }
       case "done":
-        cy.nodes().removeClass("current");
+        cyInstance.nodes().removeClass("current");
+        cyInstance.edges().removeClass("active-edge");
         break;
     }
   };
+
   return {
     runner: () => runnerRef.current,
 
@@ -51,7 +80,8 @@ export function useRunner(steps: Step[], cy: Core | null) {
 
     reset: () => {
       runnerRef.current?.reset();
-      cy?.nodes().removeClass("current visited queued");
+      cyRef.current?.nodes().removeClass("current visited queued");
+      cyRef.current?.edges().removeClass("active-edge");
     },
   };
 }
