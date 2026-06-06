@@ -3,20 +3,23 @@ import cytoscape, { type Core } from "cytoscape";
 
 import "./App.css";
 import { sampleGraph } from "../data/sampleGraph";
-import { bfs } from "../algo/bfs";
+import { algos } from "../algo";
+import type { AlgoName } from "../algo";
 import { useRunner } from "../hooks/useRunner";
 import { ControlPanel } from "./ControlPanels";
 
 function App() {
   const cyRef = useRef<Core | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [algo, setAlgo] = useState<AlgoName>("bfs");
 
-  // 1. BFS calculé une seule fois
+  // 1. génération des steps selon l'algo sélectionné
   const steps = useMemo(() => {
-    return bfs(sampleGraph, "A");
-  }, []);
+    return algos[algo](sampleGraph, "A");
+  }, [algo]);
 
-  // 2. init Cytoscape UNE seule fois
+  // 2. init cytoscape une seule fois
   useEffect(() => {
     const cyInstance = cytoscape({
       container: document.getElementById("cy") as HTMLElement,
@@ -40,21 +43,13 @@ function App() {
             label: "data(id)",
             "text-valign": "center",
             "text-halign": "center",
-
             width: 34,
             height: 34,
-
             "font-size": "12px",
             color: "#fff",
-
             "background-color": "#4a90e2",
             "border-width": 2,
-            "border-color": "#0d0d0d",
-
-            // smooth animation
-            "transition-property":
-              "background-color, border-color, width, height, box-shadow",
-            "transition-duration": "250ms",
+            "border-color": "#111",
           },
         },
 
@@ -63,54 +58,38 @@ function App() {
           style: {
             width: 2,
             "line-color": "#555",
-            "target-arrow-shape": "triangle",
-            "target-arrow-color": "#555",
             "curve-style": "bezier",
-
-            "transition-property": "line-color, width",
-            "transition-duration": "200ms",
           },
         },
 
-        // 🔴 current node (glow)
         {
           selector: ".current",
           style: {
             "background-color": "#ff4d4d",
             width: 42,
             height: 42,
-
-            "border-color": "#ff1a1a",
-
-            "box-shadow": "0 0 20px #ff4d4d",
           },
         },
 
-        // 🟢 visited
         {
           selector: ".visited",
           style: {
             "background-color": "#2ecc71",
-            "border-color": "#145a32",
           },
         },
 
-        // 🔵 queued
         {
           selector: ".queued",
           style: {
             "background-color": "#3498db",
-            "border-color": "#1b4f72",
           },
         },
 
-        // ✨ edge highlight (traversed)
         {
           selector: ".active-edge",
           style: {
             "line-color": "#ffffff",
             width: 4,
-            "target-arrow-color": "#ffffff",
           },
         },
       ],
@@ -126,8 +105,8 @@ function App() {
     cyRef.current = cyInstance;
     setIsReady(true);
 
+    // fit propre
     setTimeout(() => {
-      cyInstance.resize();
       cyInstance.fit();
       cyInstance.center();
     }, 0);
@@ -138,18 +117,29 @@ function App() {
     };
   }, []);
 
-  // 3. runner branché seulement quand prêt
+  // 3. runner
   const { play, step, reset } = useRunner(
     steps,
     isReady ? cyRef.current : null
   );
 
-  return (
-    <>
-      <div id="cy" className="graph-container" />
+  // reset automatique quand on change d'algo
+  useEffect(() => {
+    reset();
+  }, [algo]);
 
-      <ControlPanel onPlay={() => play(400)} onStep={step} onReset={reset} />
-    </>
+  return (
+    <div className="app">
+      <div ref={containerRef} id="cy" className="graph" />
+
+      <ControlPanel
+        algo={algo}
+        onAlgoChange={setAlgo}
+        onPlay={() => play(400)}
+        onStep={step}
+        onReset={reset}
+      />
+    </div>
   );
 }
 

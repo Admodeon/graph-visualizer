@@ -1,30 +1,20 @@
-type Props = {
-  onPlay: () => void;
-  onStep: () => void;
-  onReset: () => void;
-};
+import { AlgoSelector } from "./AlgoSelector";
+import type { AlgoName } from "../algo";
 
-export function ControlPanel({ onPlay, onStep, onReset }: Props) {
+export function ControlPanel({ algo, onAlgoChange, onPlay, onStep, onReset }) {
   return (
-    <div style={styles.panel}>
+    <div className="control-panel">
+      <button onClick={() => onAlgoChange("bfs")}>
+        BFS {algo === "bfs" ? "✓" : ""}
+      </button>
+
+      <button onClick={() => onAlgoChange("dfs")}>
+        DFS {algo === "dfs" ? "✓" : ""}
+      </button>
+
       <button onClick={onPlay}>Play</button>
       <button onClick={onStep}>Step</button>
       <button onClick={onReset}>Reset</button>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  panel: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    display: "flex",
-    gap: 10,
-    zIndex: 10,
-    padding: 10,
-    background: "#1e1e1e",
-    border: "1px solid #444",
-    borderRadius: 8,
-  },
-};

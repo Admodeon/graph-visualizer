@@ -1,6 +1,6 @@
 import { type Graph } from "../core/graph";
 
-export type AlgoName = "bfs";
+export type AlgoName = "bfs" | "dfs";
 
 export type Step =
   | { type: "start"; node: string }
